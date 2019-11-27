@@ -1,0 +1,25 @@
+{
+  "name": "monitor",
+  "version": "1.0.0",
+  "description": "An automation to record inbound text messages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/howethomas/monitor.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/howethomas/monitor/issues"
+  },
+  "homepage": "https://github.com/howethomas/monitor#readme",
+  "dependencies": {
+    "csv-express": "^1.2.2",
+    "express": "^4.17.1",
+    "greenbot-sdk": "^1.0.6",
+    "pug": "^2.0.4"
+  }
+}
