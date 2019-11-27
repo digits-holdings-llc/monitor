@@ -7,7 +7,7 @@ html
   body
     .container
       .row
-        .col-md-2
+        .col-md-3
           img(src="monitor.jpg" height=100)
         .col-md-4
           h1 Monitor Bot
@@ -20,23 +20,27 @@ html
           a(href=config.log_url)
             | Logs
         .col-md-2
+          a(href="#help" data-toggle="collapse")
+            | Help
+        .col-md-2
           a(href="https://github.com/howethomas/monitor")
             | Repo
       hr
-      .row
-        .col-md-8
-          h2 Summary
-          p
-            | This automation monitors and stores incoming messages.
-            | You can view the last 10 messages below or download a csv of all the messages.
-          h2 Setup
-          ol
-            li Install this automation on a web server, or use an existing installation (ex: https://monitor.tendigittext.com)
-            li Add this automation URL as an observer in the 
-              a(href="https://qa.digits.holdings/settings/team/#Automations")
-                | team settings 
-              | section in the VHT Messaging Portal
-      hr
+      #help.collapse
+        .row
+          .col-md-6
+            h2 Summary
+            p
+              | This automation monitors and stores incoming messages.
+              | You can view the last 10 messages below or download a csv of all the messages.
+          .col-md-6
+            h2 Setup
+            ol
+              li Install this automation on a web server, or use an existing installation (ex: https://monitor.tendigittext.com)
+              li Add this automation URL as an observer in the 
+                a(href="https://qa.digits.holdings/settings/team/#Automations")
+                  | team settings 
+                | section in the VHT Messaging Portal
       .row
         .col-md-12
           h2 Last 10 Responses      
