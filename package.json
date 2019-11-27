@@ -1,5 +1,5 @@
 {
-  "name": "monitor",
+  "name": "vht-monitor",
   "version": "1.0.1",
   "description": "An automation to record inbound text messages",
   "main": "index.js",
