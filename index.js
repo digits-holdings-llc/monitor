@@ -32,7 +32,7 @@ async function saveMessage(message) {
         let messagesCollection = db.collection('messages')
         await messagesCollection.insertOne(message)
     }
-    catch (error) {
+    catch (err) {
         botSDK.log(err);
 
     } 
@@ -81,7 +81,8 @@ app.get('/download.csv', async function(request, response) {
 
 // Access the parse results as request.body
 app.post('/', async function(request, response){
-    var inboundMsg = request.body;
+  var inboundMsg = request.body;
+  botSDK.log("New message : ", inboundMsg.msg.direction, ":", inboundMsg.msg.src, "->", inboundMsg.msg.dst, ":",  inboundMsg.msg.txt)
   
     // If this is a session end event, ignore
     if (inboundMsg.type == 'session_end' || inboundMsg.type == 'new_session') {
@@ -92,14 +93,21 @@ app.post('/', async function(request, response){
         response.send({})
         return;
     } 
-    if (request.body.msg.direction == "egress") {
-        response.send({})
-        return;      
-    }  
+  if (request.body.msg.direction == "egress") {
+    if (request.config.egress.toUpperCase().trim() == "FALSE") {
+      response.send({})
+      return;      
+    }
+  }  
+  if (request.body.msg.direction == "ingress") {
+    if (request.config.ingress.toUpperCase().trim() == "FALSE") {
+      response.send({})
+      return;      
+    }
+  }  
 
     await saveMessage(inboundMsg.msg)
   
-    botSDK.log("New message : ", inboundMsg.msg.src, ":", inboundMsg.msg.txt)
 })
 
 http.listen(port, () => botSDK.log(`Automation running on ${port}!`))

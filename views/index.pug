@@ -50,6 +50,7 @@ html
               thead.thead-dark
                 tr
                   th Created At
+                  th Direction
                   th Source
                   th Destination
                   th Text
@@ -57,6 +58,7 @@ html
                 for response in responses
                   tr
                     td= response.createdAt
+                    td= response.direction
                     td= response.src
                     td= response.dst
                     td= response.txt                      
