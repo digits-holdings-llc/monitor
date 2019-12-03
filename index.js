@@ -106,7 +106,8 @@ app.post('/', async function(request, response){
     }
   }  
 
-    await saveMessage(inboundMsg.msg)
+  await saveMessage(inboundMsg.msg)
+  response.send({})
   
 })
 
