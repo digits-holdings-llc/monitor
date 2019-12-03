@@ -1,6 +1,6 @@
 {
   "name": "vht-monitor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An automation to record inbound text messages",
   "main": "index.js",
   "scripts": {
