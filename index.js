@@ -82,7 +82,6 @@ app.get('/download.csv', async function(request, response) {
 // Access the parse results as request.body
 app.post('/', async function(request, response){
   var inboundMsg = request.body;
-  botSDK.log("New message : ", inboundMsg.msg.direction, ":", inboundMsg.msg.src, "->", inboundMsg.msg.dst, ":",  inboundMsg.msg.txt)
   
     // If this is a session end event, ignore
     if (inboundMsg.type == 'session_end' || inboundMsg.type == 'new_session') {
@@ -106,6 +105,8 @@ app.post('/', async function(request, response){
     }
   }  
 
+  var direction = inboundMsg.msg.direction || "whisper"
+  botSDK.log("New message : ", direction, ":", inboundMsg.msg.src, "->", inboundMsg.msg.dst, ":",  inboundMsg.msg.txt)
   await saveMessage(inboundMsg.msg)
   response.send({})
   
