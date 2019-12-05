@@ -17,9 +17,10 @@
   },
   "homepage": "https://github.com/howethomas/monitor#readme",
   "dependencies": {
-    "csv-express": "^1.2.2",
     "express": "^4.17.1",
     "greenbot-sdk": "^1.0.6",
-    "pug": "^2.0.4"
+    "pug": "^2.0.4",
+    "serve-index": "^1.9.1",
+    "shelljs": "^0.8.3"
   }
 }

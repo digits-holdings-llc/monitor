@@ -9,7 +9,8 @@ const mongoURL = process.env.MONGO_URL || 'mongodb://localhost:27017/monitor'
 const parts = mongoURL.split("/")
 const DB_NAME = parts[parts.length - 1]
 var botSDK = require('greenbot-sdk')
-var csv = require('csv-express')
+var serveIndex = require('serve-index')
+var shell = require('shelljs');
 
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
@@ -19,6 +20,19 @@ app.set('view engine', 'pug')
 app.set('views', './views')
 app.use(express.static('public'))
 botSDK.init(app, http)
+
+function getCsvExportCommandText() {
+    var filename = 'download-' + Date.now() + '.csv'
+    return {commandLine: ['mongoexport', "--uri=\"" + mongoURL + "\"", '--fields=_id,createdAt,src,dst,txt,direction,network', '--collection=messages', '--type=csv', '--out=exports/' + filename].join(" "), filename: filename}
+}
+
+async function getCsvExportCommand(commandLine) {
+    var result = await shell.exec(commandLine)
+    console.log(result.code)
+    if (result.code !== 0) {
+      throw "CSV export command failed with code: " + result.code
+    }
+}
 
 app.get('/', async function(request, response) {
     await getMessages(request, response)
@@ -59,20 +73,18 @@ async function getMessages(request, response) {
 }
 
 async function getDownloadCsv(request, response) {
-    const client = await MongoClient.connect(mongoURL).catch(err => {botSDK.log("Mongo Client Connect error", err)})
+    var file = getCsvExportCommandText()
+    console.log(file.commandLine)
+    console.log(file.filename)
 
     try {
-        const db = client.db(DB_NAME)
-        let respColl = db.collection('messages')
-        var responses = await respColl.find({}, {sort: {createdAt: 1}, projection: {_id: 0, createdAt: 1, src: 1, dst: 1, txt: 1, direction: 1, network: 1}}).toArray()
-        response.csv(responses, true)
+        var result = await getCsvExportCommand(file.commandLine)
+        response.redirect("/exports/" + file.filename)
     } 
     catch (err) {
         botSDK.log(err);
+        response.sendStatus(500)
     } 
-    finally {
-        client.close();
-    }
 }
 
 app.get('/download.csv', async function(request, response) {
@@ -112,4 +124,5 @@ app.post('/', async function(request, response){
   
 })
 
+app.use('/exports', express.static('exports'), serveIndex('exports', {'icons': true}))
 http.listen(port, () => botSDK.log(`Automation running on ${port}!`))
