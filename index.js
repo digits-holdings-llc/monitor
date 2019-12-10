@@ -21,6 +21,13 @@ app.set('views', './views')
 app.use(express.static('public'))
 botSDK.init(app, http)
 
+// Create a mongoDB connection for the life of the application. 
+var client;
+MongoClient.connect(mongoURL).catch(err => {console.log("Mongo Client Connect error", err)}).then((result) => {
+  console.log("Connected")
+  client = result;
+})
+
 function getCsvExportCommandText() {
     var filename = 'download-' + Date.now() + '.csv'
     return {commandLine: ['mongoexport', "--uri=\"" + mongoURL + "\"", '--fields=_id,createdAt,src,dst,txt,direction,network', '--collection=messages', '--type=csv', '--out=exports/' + filename].join(" "), filename: filename}
@@ -39,7 +46,6 @@ app.get('/', async function(request, response) {
 })
 
 async function saveMessage(message) {
-    const client = await MongoClient.connect(mongoURL).catch(err => {console.log("Mongo Client Connect error", err)})
 
     try {
         const db = client.db(DB_NAME)
@@ -50,14 +56,9 @@ async function saveMessage(message) {
         botSDK.log(err);
 
     } 
-    finally {
-        client.close();
-    }
 }
 
 async function getMessages(request, response) {
-    const client = await MongoClient.connect(mongoURL).catch(err => {botSDK.log("Mongo Client Connect error", err)})
-
     try {
         const db = client.db(DB_NAME)
         let respColl = db.collection('messages')
@@ -67,9 +68,6 @@ async function getMessages(request, response) {
     catch (err) {
         botSDK.log(err);
     } 
-    finally {
-        client.close();
-    }
 }
 
 async function getDownloadCsv(request, response) {
