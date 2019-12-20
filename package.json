@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/howethomas/monitor.git"
+    "url": "git+https://github.com/digits-holdings-llc/monitor.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/howethomas/monitor/issues"
+    "url": "https://github.com/digits-holdings-llc/monitor/issues"
   },
-  "homepage": "https://github.com/howethomas/monitor#readme",
+  "homepage": "https://github.com/digits-holdings-llc/monitor#readme",
   "dependencies": {
     "express": "^4.17.1",
     "greenbot-sdk": "^1.0.9",
