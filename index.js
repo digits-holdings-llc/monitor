@@ -3,13 +3,11 @@ const app = express();
 const http = require('http').createServer(app);
 
 const port = process.env.WEB_PORT || 80;
-const MongoClient = require('mongodb').MongoClient;
 const { GraphQLClient } = require('graphql-request');
 const SUBDOMAIN = process.env.SUBDOMAIN;
 const MONGO_CLUSTER_URL = process.env.MONGO_CLUSTER_URL;
 const MONGO_URL = `${MONGO_CLUSTER_URL}/${SUBDOMAIN}/?retryWrites=true&w=majority` || `mongodb://localhost:27017/${SUBDOMAIN}`;
-const botSDK = require('greenbot-sdk');
-const { client } = botSDK;
+const { init, log, client } = require('greenbot-sdk');
 const serveIndex = require('serve-index');
 const shell = require('shelljs');
 
@@ -20,20 +18,10 @@ app.engine('pug', require('pug').__express);
 app.set('view engine', 'pug');
 app.set('views', './views');
 app.use(express.static('public'));
-botSDK.init(app, http);
-
-// Create a mongoDB connection for the life of the application.
-client
-  .connect()
-  .catch(err => {
-    console.log('Mongo Client Connect error', err);
-  })
-  .then(result => {
-    console.log('Monitor Connected');
-  });
+init(app, http);
 
 function getCsvExportCommandText() {
-  var filename = 'download-' + Date.now() + '.csv';
+  const filename = 'download-' + Date.now() + '.csv';
   return {
     commandLine: ['mongoexport', '--uri="' + MONGO_URL + '"', '--fields=_id,createdAt,src,dst,txt,direction,network', '--collection=messages', '--type=csv', '--out=exports/' + filename].join(' '),
     filename: filename
@@ -41,7 +29,7 @@ function getCsvExportCommandText() {
 }
 
 async function getCsvExportCommand(commandLine) {
-  var result = await shell.exec(commandLine);
+  const result = await shell.exec(commandLine);
   console.log(result.code);
   if (result.code !== 0) {
     throw 'CSV export command failed with code: ' + result.code;
@@ -58,31 +46,31 @@ async function saveMessage(message) {
     let messagesCollection = db.collection('messages');
     await messagesCollection.insertOne(message);
   } catch (err) {
-    botSDK.log(err);
+    log(err);
   }
 }
 
 async function getMessages(request, response) {
   try {
     const db = client.db(SUBDOMAIN);
-    let respColl = db.collection('messages');
-    var responses = await respColl.find({}, { sort: { createdAt: -1 }, limit: 10 }).toArray();
+    const respColl = db.collection('messages');
+    const responses = await respColl.find({}, { sort: { createdAt: -1 }, limit: 10 }).toArray();
     response.render('index', { responses, config: request.config });
   } catch (err) {
-    botSDK.log(err);
+    log(err);
   }
 }
 
 async function getDownloadCsv(request, response) {
-  var file = getCsvExportCommandText();
+  const file = getCsvExportCommandText();
   console.log(file.commandLine);
   console.log(file.filename);
 
   try {
-    var result = await getCsvExportCommand(file.commandLine);
+    await getCsvExportCommand(file.commandLine);
     response.redirect('/exports/' + file.filename);
   } catch (err) {
-    botSDK.log(err);
+    log(err);
     response.sendStatus(500);
   }
 }
@@ -93,7 +81,7 @@ app.get('/download.csv', async function(request, response) {
 
 // Access the parse results as request.body
 app.post('/', async function(request, response) {
-  var inboundMsg = request.body;
+  const inboundMsg = request.body;
 
   // If this is a session end event, ignore
   if (inboundMsg.type == 'session_end' || inboundMsg.type == 'new_session') {
@@ -117,11 +105,11 @@ app.post('/', async function(request, response) {
     }
   }
 
-  var direction = inboundMsg.msg.direction || 'whisper';
-  botSDK.log('New message : ', direction, ':', inboundMsg.msg.src, '->', inboundMsg.msg.dst, ':', inboundMsg.msg.txt);
+  const direction = inboundMsg.msg.direction || 'whisper';
+  log('New message : ', direction, ':', inboundMsg.msg.src, '->', inboundMsg.msg.dst, ':', inboundMsg.msg.txt);
   await saveMessage(inboundMsg.msg);
   response.send({});
 });
 
 app.use('/exports', express.static('exports'), serveIndex('exports', { icons: true }));
-http.listen(port, () => botSDK.log(`Automation running on ${port}!`));
+http.listen(port, () => log(`Automation running on ${port}!`));
