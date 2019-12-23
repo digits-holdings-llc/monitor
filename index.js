@@ -9,6 +9,7 @@ const SUBDOMAIN = process.env.SUBDOMAIN;
 const MONGO_CLUSTER_URL = process.env.MONGO_CLUSTER_URL;
 const MONGO_URL = `${MONGO_CLUSTER_URL}/${SUBDOMAIN}/?retryWrites=true&w=majority` || `mongodb://localhost:27017/${SUBDOMAIN}`;
 const botSDK = require('greenbot-sdk');
+const { client } = botSDK;
 const serveIndex = require('serve-index');
 const shell = require('shelljs');
 
@@ -19,17 +20,16 @@ app.engine('pug', require('pug').__express);
 app.set('view engine', 'pug');
 app.set('views', './views');
 app.use(express.static('public'));
+botSDK.init(app, http);
 
 // Create a mongoDB connection for the life of the application.
-const client = new MongoClient(MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-
 client
   .connect()
   .catch(err => {
     console.log('Mongo Client Connect error', err);
   })
   .then(result => {
-    console.log('Connected');
+    console.log('Monitor Connected');
   });
 
 function getCsvExportCommandText() {
