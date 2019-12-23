@@ -3,7 +3,6 @@ const app = express();
 const http = require('http').createServer(app);
 
 const port = process.env.WEB_PORT || 80;
-const { GraphQLClient } = require('graphql-request');
 const SUBDOMAIN = process.env.SUBDOMAIN;
 const MONGO_CLUSTER_URL = process.env.MONGO_CLUSTER_URL;
 const MONGO_URL = `${MONGO_CLUSTER_URL}/${SUBDOMAIN}/?retryWrites=true&w=majority` || `mongodb://localhost:27017/${SUBDOMAIN}`;
