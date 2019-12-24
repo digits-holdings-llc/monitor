@@ -18,7 +18,7 @@
   "homepage": "https://github.com/digits-holdings-llc/monitor#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "greenbot-sdk": "^1.0.13",
+    "greenbot-sdk": "^1.0.14",
     "pug": "^2.0.4",
     "serve-index": "^1.9.1",
     "shelljs": "^0.8.3"
