@@ -8,6 +8,7 @@ COPY package.json package-lock.json /web/
 
 RUN cd /web && npm install
 COPY . /web
+RUN mv /web/config.yaml.template /web/config.yaml
 
 ENTRYPOINT [ "tini","--" ]
 CMD ["node","/web/index.js"]
