@@ -5,7 +5,7 @@ const http = require('http').createServer(app);
 const port = process.env.WEB_PORT || 80;
 const SUBDOMAIN = process.env.SUBDOMAIN;
 const MONGO_CLUSTER_URL = process.env.MONGO_CLUSTER_URL;
-const MONGO_URL = `${MONGO_CLUSTER_URL}/${SUBDOMAIN}/?retryWrites=true&w=majority` || `mongodb://localhost:27017/${SUBDOMAIN}`;
+const MONGO_URL = `${MONGO_CLUSTER_URL}/${SUBDOMAIN}` || `mongodb://localhost:27017/${SUBDOMAIN}`;
 const { init, log, client } = require('greenbot-sdk');
 const serveIndex = require('serve-index');
 const shell = require('shelljs');
@@ -20,10 +20,17 @@ app.use(express.static('public'));
 init(app, http);
 
 function getCsvExportCommandText() {
-  const filename = 'download-' + Date.now() + '.csv';
+  const filename = `download-${Date.now()}.csv`;
   return {
-    commandLine: ['mongoexport', '--uri="' + MONGO_URL + '"', '--fields=_id,createdAt,src,dst,txt,direction,network', '--collection=messages', '--type=csv', '--out=exports/' + filename].join(' '),
-    filename: filename
+    commandLine: [
+      `mongoexport`,
+      `--uri="${MONGO_URL}"`,
+      '--fields=_id,createdAt,src,dst,txt,direction,network',
+      '--collection=messages',
+      '--type=csv',
+      `--out=exports/${filename}`
+    ].join(' '),
+    filename
   };
 }
 
