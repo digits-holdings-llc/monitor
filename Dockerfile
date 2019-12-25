@@ -1,6 +1,6 @@
-FROM node:13.3.0-alpine3.10
+FROM node:lts-alpine3.9
 
-RUN apk add --no-cache tini
+RUN apk add --no-cache tini mongodb-tools
 
 RUN mkdir /web
 WORKDIR /web
