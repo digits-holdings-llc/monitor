@@ -28,18 +28,19 @@ function getCsvExportCommandText() {
       '--fields=_id,createdAt,src,dst,txt,direction,network',
       '--collection=messages',
       '--type=csv',
-      `--out=exports/${filename}`
+      '--quiet'
     ].join(' '),
     filename
   };
 }
 
-async function getCsvExportCommand(commandLine) {
-  const result = await shell.exec(commandLine);
-  console.log(result.code);
-  if (result.code !== 0) {
-    throw 'CSV export command failed with code: ' + result.code;
-  }
+function getCsvExportCommand(commandLine) {
+  const result = shell.exec(commandLine, { silent: true, async: true });
+  // console.log(result.code);
+  // if (result.code !== 0) {
+  //   throw 'CSV export command failed with code: ' + result.code;
+  // }
+  return result.stdout;
 }
 
 app.get('/', async function(request, response) {
@@ -67,14 +68,43 @@ async function getMessages(request, response) {
   }
 }
 
-async function getDownloadCsv(request, response) {
-  const file = getCsvExportCommandText();
-  console.log(file.commandLine);
-  console.log(file.filename);
+// async function getDownloadCsv(request, response) {
+//   const { commandLine, filename } = getCsvExportCommandText();
 
+//   try {
+//     const stdout = getCsvExportCommand(commandLine);
+//     response.set({
+//       'Content-Type': 'text/csv',
+//       'Content-Disposition': `attachment; filename=${filename}`,
+//       'Transfer-Encoding': 'chunked',
+//       charset: 'UTF-8'
+//     });
+//     // console.log(stdout);
+//     stdout.pipe(response);
+//     stdout.on('finish', e => console.log(e));
+//   } catch (err) {
+//     log(err);
+//     response.sendStatus(500);
+//   }
+// }
+
+async function getDownloadCsv(request, response) {
   try {
-    await getCsvExportCommand(file.commandLine);
-    response.redirect('/exports/' + file.filename);
+    const db = client.db(SUBDOMAIN);
+    let messagesCollection = db.collection('messages');
+    response.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename=download-${Date.now()}.csv`,
+      'Transfer-Encoding': 'chunked',
+      charset: 'UTF-8'
+    });
+    messagesCollection
+      .find()
+      .transformStream({
+        transform: ({ _id, createdAt, src, dst, txt, direction, network }) =>
+          `${_id},${createdAt},${src},${dst},"${txt}",${direction},${network}\n`
+      })
+      .pipe(response);
   } catch (err) {
     log(err);
     response.sendStatus(500);
@@ -117,5 +147,5 @@ app.post('/', async function(request, response) {
   response.send({});
 });
 
-app.use('/exports', express.static('exports'), serveIndex('exports', { icons: true }));
+// app.use('/exports', express.static('exports'), serveIndex('exports', { icons: true }));
 http.listen(port, () => log(`Automation running on ${port}!`));
