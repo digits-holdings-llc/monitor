@@ -62,7 +62,8 @@ async function getMessages(request, response) {
     const db = client.db(SUBDOMAIN);
     const respColl = db.collection('messages');
     const responses = await respColl.find({}, { sort: { createdAt: -1 }, limit: 10 }).toArray();
-    response.render('index', { responses, config: request.config });
+    const version = process.env.COMMIT_HASH ? process.env.COMMIT_HASH : "";
+    response.render('index', { responses, config: request.config,version });
   } catch (err) {
     log(err);
   }
