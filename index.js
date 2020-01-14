@@ -36,10 +36,6 @@ function getCsvExportCommandText() {
 
 function getCsvExportCommand(commandLine) {
   const result = shell.exec(commandLine, { silent: true, async: true });
-  // console.log(result.code);
-  // if (result.code !== 0) {
-  //   throw 'CSV export command failed with code: ' + result.code;
-  // }
   return result.stdout;
 }
 
@@ -69,25 +65,31 @@ async function getMessages(request, response) {
   }
 }
 
-// async function getDownloadCsv(request, response) {
-//   const { commandLine, filename } = getCsvExportCommandText();
+async function getAllCounts(request, response) {
+    try {
+      const db = client.db(SUBDOMAIN);
+      const col = db.collection('messages');
+      const ingressTotal = col.find({direction: "ingress"}).count(); 
+      const egressTotal = col.find({direction: "egress"}).count(); 
+      const ingressQuit = col.find({txt: /^quit$/i, direction: "ingress"}).count(); 
+      const egressSaucy = col.find({"txt" : {$regex : ".*saucy.*", $options: 'i' }, direction: "egress"}).count();
+      var result = await Promise.all([ingressTotal, egressTotal, ingressQuit, egressSaucy]);
 
-//   try {
-//     const stdout = getCsvExportCommand(commandLine);
-//     response.set({
-//       'Content-Type': 'text/csv',
-//       'Content-Disposition': `attachment; filename=${filename}`,
-//       'Transfer-Encoding': 'chunked',
-//       charset: 'UTF-8'
-//     });
-//     // console.log(stdout);
-//     stdout.pipe(response);
-//     stdout.on('finish', e => console.log(e));
-//   } catch (err) {
-//     log(err);
-//     response.sendStatus(500);
-//   }
-// }
+      var resultObject = {
+        ingressTotal: result[0],
+        ingressQuit: result[2],
+        ingress: result[0] - result[2],
+        egressTotal: result[1],
+        egressSaucy: result[3],
+        egress: result[1] - result[3]
+      };
+
+      console.log(resultObject);
+      response.render('counts', {config: request.config, counts: resultObject});  
+    } catch (err) {
+      log(err);
+    }
+  }
 
 async function getDownloadCsv(request, response) {
   try {
@@ -111,6 +113,10 @@ async function getDownloadCsv(request, response) {
     response.sendStatus(500);
   }
 }
+
+app.get('/counts', async function(request, response) {
+  await getAllCounts(request, response);
+});
 
 app.get('/download.csv', async function(request, response) {
   await getDownloadCsv(request, response);
