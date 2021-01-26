@@ -22,6 +22,6 @@
     "querystring": "^0.2.0",
     "serve-index": "^1.9.1",
     "shelljs": "^0.8.4",
-    "vht-automations-sdk": "^1.1.1"
+    "vht-automations-sdk": "^1.1.3"
   }
 }
